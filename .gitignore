@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+secrets/
+logs/
+data/processed_ids.json

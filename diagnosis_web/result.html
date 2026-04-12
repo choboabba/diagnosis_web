@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>부모 유형 진단 결과</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #0B132B;
+      color: #F8F9FA;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    .card {
+      background-color: #1C2541;
+      border-radius: 16px;
+      padding: 24px;
+      box-sizing: border-box;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin-top: 0;
+      color: #E2B05E;
+      font-size: 30px;
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      color: #E2B05E;
+      font-size: 20px;
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+
+    p {
+      line-height: 1.75;
+      font-size: 16px;
+      margin: 10px 0;
+    }
+
+    .type-label {
+      color: #E2B05E;
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 6px;
+      letter-spacing: 0.02em;
+    }
+
+    .trust-copy {
+      background-color: rgba(226, 176, 94, 0.12);
+      border: 1px solid rgba(226, 176, 94, 0.25);
+      padding: 14px 16px;
+      border-radius: 12px;
+      font-size: 15px;
+    }
+
+    .relief-copy {
+      font-size: 22px;
+      font-weight: bold;
+      color: #F8F9FA;
+      line-height: 1.6;
+      margin-top: 8px;
+      margin-bottom: 0;
+    }
+
+    .lead-form {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 6px;
+      color: #F8F9FA;
+    }
+
+    .field-input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(248, 249, 250, 0.16);
+      background-color: #0B132B;
+      color: #F8F9FA;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+
+    .field-input::placeholder {
+      color: rgba(248, 249, 250, 0.45);
+    }
+
+    .button-row {
+      margin-top: 24px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .button {
+      display: inline-block;
+      padding: 14px 20px;
+      background-color: #E2B05E;
+      color: #0B132B;
+      text-decoration: none;
+      font-weight: bold;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-size: 15px;
+      transition: opacity 0.2s ease;
+    }
+
+    .button:hover {
+      opacity: 0.92;
+    }
+
+    .button.secondary {
+      background-color: #3A506B;
+      color: #F8F9FA;
+    }
+
+    .muted {
+      font-size: 14px;
+      opacity: 0.88;
+    }
+
+    .notice-box {
+      background-color: #3A506B;
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 12px;
+    }
+
+.product-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.product-item {
+  background-color: #0B132B;
+  border: 1px solid rgba(248, 249, 250, 0.12);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.product-rank {
+  font-size: 13px;
+  color: #E2B05E;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.product-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: #F8F9FA;
+}
+@media (max-width: 640px) {
+      .container {
+        padding: 20px 14px;
+      }
+
+      .relief-copy {
+        font-size: 19px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="resultContainer"></div>
+
+    <div class="button-row">
+      <a href="/questions?page=1" class="button">다시 진단하기</a>
+      <button type="button" class="button secondary" id="resetBtn">응답 초기화</button>
+    </div>
+  </div>
+
+  <script>
+    function getCauseText(theoryText) {
+      const causeMap = {
+        "No Energy 중심": "지금은 회복과 에너지 보완이 가장 먼저 필요한 상태입니다.",
+        "No Compass 중심": "지금은 기준과 방향을 다시 세우는 것이 가장 중요한 상태입니다.",
+        "No Action 중심": "지금은 실행을 작게 이어갈 구조가 가장 필요한 상태입니다.",
+        "No Energy + No Action": "지침과 실행 흔들림이 함께 겹쳐 있는 상태입니다.",
+        "No Compass + No Energy": "비교 불안과 기준 흔들림이 함께 커지기 쉬운 상태입니다.",
+        "No Action + No Compass": "실행 이탈과 방향 흔들림이 함께 반복되기 쉬운 상태입니다.",
+        "No Energy + No Compass + No Action": "에너지, 기준, 실행이 함께 흔들리고 있어 우선순위 재정렬이 먼저 필요한 상태입니다."
+      };
+
+      return causeMap[theoryText] || theoryText || "지금 상태를 설명할 핵심 원인을 불러오지 못했습니다.";
+    }
+
+    async function submitLead() {
+      const name = document.getElementById("leadName").value.trim();
+      const email = document.getElementById("leadEmail").value.trim();
+      const childCount = document.getElementById("leadChildCount").value.trim();
+      const childAge = document.getElementById("leadChildAge").value.trim();
+      const job = document.getElementById("leadJob").value.trim();
+
+      if (!name) {
+        alert("이름을 입력해주세요.");
+        return;
+      }
+
+      if (!email) {
+        alert("이메일을 입력해주세요.");
+        return;
+      }
+
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailPattern.test(email)) {
+        alert("이메일 형식을 확인해주세요.");
+        return;
+      }
+
+      const raw = localStorage.getItem("diagnosisResult");
+      if (!raw) {
+        alert("진단 결과 데이터가 없습니다. 다시 진단을 진행해주세요.");
+        return;
+      }
+
+      const diagnosisResult = JSON.parse(raw);
+
+      const payload = {
+        name,
+        email,
+        child_count: childCount,
+        child_age: childAge,
+        job,
+        diagnosis_result: diagnosisResult
+      };
+
+      try {
+        const response = await fetch("/api/submit-lead", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+          alert("신청 처리 중 오류가 발생했습니다: " + (data.error || "알 수 없는 오류"));
+          return;
+        }
+
+        localStorage.setItem("leadInfo", JSON.stringify({
+          name,
+          email,
+          child_count: childCount,
+          child_age: childAge,
+          job
+        }));
+
+        window.location.href = "/complete";
+
+      } catch (error) {
+        alert("서버 요청 실패: " + error.message);
+      }
+    }
+
+    function renderResult() {
+      const resultContainer = document.getElementById("resultContainer");
+      const raw = localStorage.getItem("diagnosisResult");
+
+      if (!raw) {
+        resultContainer.innerHTML = `
+          <div class="card">
+            <h1>진단 결과</h1>
+            <p>결과 데이터가 없습니다. 먼저 진단을 진행해주세요.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const result = JSON.parse(raw);
+
+      const typeName = result.parent_type || "결과 확인 필요";
+      const relief = result.relief || "지금 상태를 먼저 이해하는 것이 중요합니다.";
+      const structure = result.structure || "구조 설명을 불러오지 못했습니다.";
+      const theory = result.theory || "";
+      const causeText = getCauseText(theory);
+      const displayTags = Array.isArray(result.display_tags) ? result.display_tags.filter(Boolean) : [];
+      const recommendedProducts = Array.isArray(result.recommended_products) ? result.recommended_products.filter(Boolean) : [];
+
+      resultContainer.innerHTML = `
+        <div class="card">
+          <div class="type-label">부모 유형 진단 결과</div>
+          <h1>${typeName}</h1>
+          <p class="trust-copy">
+            이 결과는 부모를 평가하는 진단이 아니라,
+            현재 가장 먼저 무너지고 있는 구조를 이해하기 위한 해석입니다.
+          </p>
+          <p class="relief-copy">${relief}</p>
+        </div>
+
+        <div class="card">
+          <h2>지금의 상태</h2>
+          <p>${structure}</p>
+        </div>
+        <div class="card">
+          <h2>현재 상태의 핵심 원인</h2>
+          <p>${causeText}</p>
+        </div>
+        <div class="card">
+          <h2>상세 진단 결과 메일로 받기</h2>
+          <p>
+            지금 결과는 간략 버전입니다.
+            아래 정보를 입력하시면 상세 진단 결과와 맞춤 회복 가이드를 이메일로 보내드립니다.
+          </p>
+
+          <div class="notice-box">
+            <p class="muted">
+              입력 후에는 화면에서 상세 결과가 바로 열리지 않고,
+              작성하신 이메일로 상세 진단 결과가 발송됩니다.
+            </p>
+          </div>
+
+          <div class="lead-form">
+            <div>
+              <label class="field-label" for="leadName">이름</label>
+              <input class="field-input" type="text" id="leadName" placeholder="이름을 입력해주세요" />
+            </div>
+
+            <div>
+              <label class="field-label" for="leadEmail">이메일</label>
+              <input class="field-input" type="email" id="leadEmail" placeholder="example@email.com" />
+            </div>
+
+            <div>
+              <label class="field-label" for="leadChildCount">자녀수</label>
+              <input class="field-input" type="text" id="leadChildCount" placeholder="예: 숫자만 입력 (2명이면 '2')" />
+            </div>
+
+            <div>
+              <label class="field-label" for="leadChildAge">자녀연령</label>
+              <input class="field-input" type="text" id="leadChildAge" placeholder="예: 만 나이로 숫자만 입력 ('7', '1')" />
+            </div>
+
+            <div>
+              <label class="field-label" for="leadJob">직업</label>
+              <input class="field-input" type="text" id="leadJob" placeholder="예: 회사원" />
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button type="button" class="button" onclick="submitLead()">상세 결과 메일로 받기</button>
+          </div>
+        </div>
+      `;
+    }
+
+    document.getElementById("resetBtn").addEventListener("click", function () {
+      localStorage.removeItem("answers");
+      localStorage.removeItem("diagnosisResult");
+      localStorage.removeItem("leadInfo");
+      window.location.href = "/questions?page=1";
+    });
+
+    renderResult();
+  </script>
+</body>
+</html>

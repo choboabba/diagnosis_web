@@ -1,0 +1,71 @@
+{
+  "version": "1.0",
+  "description": "진단 결과를 기반으로 TAG를 생성하기 위한 기본 규칙 파일",
+  "defaults": {
+    "tag_parent_type": "ptype_unknown",
+    "tag_interest": "interest_unknown",
+    "tag_urgency": "urgency_low",
+    "tag_stage": "stage_new",
+    "tag_offer": "offer_unknown",
+    "status": "new",
+    "clicked": "N",
+    "clicked_count": 0,
+    "purchased": "N"
+  },
+  "result_type_map": {
+    "불안형": "ptype_anxiety",
+    "통제형": "ptype_control",
+    "공감형": "ptype_empathy",
+    "방임형": "ptype_avoidant",
+    "혼합형": "ptype_mixed"
+  },
+  "interest_rules": {
+    "score_fields": [
+      "emotion_score",
+      "habit_score",
+      "study_score",
+      "relationship_score"
+    ],
+    "mapping": {
+      "emotion_score": "interest_emotion",
+      "habit_score": "interest_habit",
+      "study_score": "interest_study",
+      "relationship_score": "interest_relationship"
+    }
+  },
+  "urgency_rules": {
+    "score_field": "result_score",
+    "high_min": 80,
+    "mid_min": 60,
+    "low_max": 59,
+    "mapping": {
+      "high": "urgency_high",
+      "mid": "urgency_mid",
+      "low": "urgency_low"
+    }
+  },
+  "offer_rules": {
+    "interest_emotion": "offer_guide_emotion",
+    "interest_habit": "offer_guide_habit",
+    "interest_study": "offer_guide_study",
+    "interest_relationship": "offer_guide_relationship",
+    "interest_unknown": "offer_unknown"
+  },
+  "stage_rules": {
+    "initial": "stage_new"
+  },
+  "status_rules": {
+    "initial": "new",
+    "after_tagging": "tagged",
+    "after_routing": "routed",
+    "after_drafting": "drafted",
+    "on_error": "error"
+  },
+  "all_tags_order": [
+    "tag_parent_type",
+    "tag_interest",
+    "tag_urgency",
+    "tag_stage",
+    "tag_offer"
+  ]
+}
