@@ -8,3 +8,7 @@ data/processed_ids.json
 outputs/
 del_file/
 .claude/
+CLAUDE.md
+SPEC.md
+PROMPT_PLAN.md
+.env.example
