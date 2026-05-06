@@ -1,12 +1,36 @@
+import os
+import re
+import logging
+
 from flask import Flask, request, jsonify, send_from_directory, redirect
 from diagnosis_logic import run_diagnosis
 from automation.tag_engine import classify_text
 from automation.content_map import get_recommended_products
+from email_generator import generate_email_subject, generate_email_html, generate_email_text
 import requests
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__, static_folder="diagnosis_web")
 
-APPS_SCRIPT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwQJgGtewBw7TncZO7bskFLmSQ67HyUrjbn5QY4bs38rRg2Pfo9QcTF1ETWP_PjTlDE/exec"
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+APPS_SCRIPT_WEBHOOK_URL = os.getenv("APPS_SCRIPT_WEBHOOK_URL")
+
+EMAIL_PATTERN = re.compile(r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$')
+MAX_NAME_LENGTH = 100
+MAX_FIELD_LENGTH = 200
+
+
+@app.after_request
+def add_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    return response
 
 
 @app.route("/")
@@ -40,10 +64,6 @@ def diagnosis_start():
 
 
 def build_diagnosis_text(result: dict) -> str:
-    """
-    run_diagnosis 결과를 하나의 텍스트로 합쳐
-    tag_engine 분류에 사용할 입력값을 만든다.
-    """
     parts = [
         str(result.get("parent_type", "")).strip(),
         str(result.get("relief", "")).strip(),
@@ -51,6 +71,26 @@ def build_diagnosis_text(result: dict) -> str:
         str(result.get("theory", "")).strip(),
     ]
     return " ".join([p for p in parts if p])
+
+
+def send_result_to_apps_script(payload: dict) -> dict:
+    if not APPS_SCRIPT_WEBHOOK_URL:
+        raise RuntimeError("APPS_SCRIPT_WEBHOOK_URL 환경변수가 설정되지 않았습니다.")
+    response = requests.post(
+        APPS_SCRIPT_WEBHOOK_URL,
+        json=payload,
+        headers={"Content-Type": "application/json"},
+        timeout=20
+    )
+    response.raise_for_status()
+    return response.json()
+
+
+def validate_diagnosis_result_structure(diagnosis_result) -> bool:
+    if not isinstance(diagnosis_result, dict):
+        return False
+    required_keys = {"parent_type", "scores", "diagnosis"}
+    return required_keys.issubset(diagnosis_result.keys())
 
 
 @app.route("/api/diagnose", methods=["POST"])
@@ -61,16 +101,24 @@ def diagnose():
         if not data:
             return jsonify({"success": False, "error": "요청 데이터가 없습니다."}), 400
 
-        answers = data.get("answers")
+        answers = data.get("answers", {})
 
-        if not isinstance(answers, list):
-            return jsonify({"success": False, "error": "answers는 리스트여야 합니다."}), 400
+        if not isinstance(answers, dict):
+            return jsonify({"success": False, "error": "answers는 객체여야 합니다."}), 400
 
-        result = run_diagnosis(answers)
+        required_keys = [f"q{i}" for i in range(1, 31)]
+        missing = [k for k in required_keys if k not in answers or answers[k] in [None, ""]]
 
-        # -----------------------------
-        # TAG + 추천 상품 자동 생성
-        # -----------------------------
+        if missing:
+            return jsonify({
+                "success": False,
+                "error": f"응답 누락: {', '.join(missing[:5])}"
+            }), 400
+
+        answers_list = [answers.get(f"q{i}") for i in range(1, 31)]
+
+        result = run_diagnosis(answers_list)
+
         diagnosis_text = build_diagnosis_text(result)
         tag_result = classify_text(diagnosis_text)
         products = get_recommended_products(tag_result)
@@ -87,7 +135,6 @@ def diagnose():
             products.get("product_3", ""),
         ]
 
-        # 관리자/내부용 태그도 함께 저장
         result["internal_tags"] = {
             "type_primary": tag_result.get("type_primary", ""),
             "module_primary": tag_result.get("module_primary", ""),
@@ -99,10 +146,14 @@ def diagnose():
             "result": result
         })
 
+    except ValueError as e:
+        return jsonify({"success": False, "error": str(e)}), 400
+
     except Exception as e:
+        logger.error("진단 처리 오류: %s", e)
         return jsonify({
             "success": False,
-            "error": str(e)
+            "error": "진단 처리 중 오류가 발생했습니다. 다시 시도해주세요."
         }), 500
 
 
@@ -121,61 +172,127 @@ def submit_lead():
         if not name:
             return jsonify({"success": False, "error": "name 값이 필요합니다."}), 400
 
+        if len(name) > MAX_NAME_LENGTH:
+            return jsonify({"success": False, "error": f"이름은 {MAX_NAME_LENGTH}자 이내여야 합니다."}), 400
+
         if not email:
             return jsonify({"success": False, "error": "email 값이 필요합니다."}), 400
+
+        if len(email) > MAX_FIELD_LENGTH:
+            return jsonify({"success": False, "error": "이메일 형식이 올바르지 않습니다."}), 400
+
+        if not EMAIL_PATTERN.match(email):
+            return jsonify({"success": False, "error": "이메일 형식이 올바르지 않습니다."}), 400
 
         if not diagnosis_result:
             return jsonify({"success": False, "error": "diagnosis_result 값이 필요합니다."}), 400
 
+        if not validate_diagnosis_result_structure(diagnosis_result):
+            return jsonify({"success": False, "error": "diagnosis_result 형식이 올바르지 않습니다."}), 400
+
+        child_count = str(data.get("child_count", "")).strip()[:50]
+        child_age = str(data.get("child_age", "")).strip()[:50]
+        job = str(data.get("job", "")).strip()[:100]
+        answers = data.get("answers")
+        diagnosis_version = str(data.get("diagnosis_version", "")).strip()[:50]
+        submitted_at = str(data.get("submitted_at", "")).strip()[:50]
+        source = str(data.get("source", "")).strip()[:100]
+        product_code = str(data.get("product_code", "")).strip()[:100]
+        product_name = str(data.get("product_name", "")).strip()[:100]
+        payment_status = str(data.get("payment_status", "")).strip()[:50]
+        payment_provider = str(data.get("payment_provider", "")).strip()[:50]
+        payment_order_id = str(data.get("payment_order_id", "")).strip()[:100]
+        consent_privacy = bool(data.get("consent_privacy", False))
+        consent_marketing = bool(data.get("consent_marketing", False))
+
+        email_subject = generate_email_subject(diagnosis_result)
+        email_body_html = generate_email_html(diagnosis_result)
+        email_body_text = generate_email_text(diagnosis_result)
+
+        safe_result = {k: v for k, v in diagnosis_result.items() if k != "answers"}
+
         payload = {
             "name": name,
             "email": email,
-            "child_count": str(data.get("child_count", "")).strip(),
-            "child_age": str(data.get("child_age", "")).strip(),
-            "job": str(data.get("job", "")).strip(),
-            "diagnosis_result": diagnosis_result
+            "child_count": child_count,
+            "child_age": child_age,
+            "job": job,
+            "answers": answers,
+            "diagnosis_result": safe_result,
+            "diagnosis_version": diagnosis_version,
+            "submitted_at": submitted_at,
+            "source": source,
+            "product_code": product_code,
+            "product_name": product_name,
+            "payment_status": payment_status,
+            "payment_provider": payment_provider,
+            "payment_order_id": payment_order_id,
+            "consent_privacy": consent_privacy,
+            "consent_marketing": consent_marketing,
+            "email_subject": email_subject,
+            "email_body_html": email_body_html,
+            "email_body_text": email_body_text,
         }
 
-        response = requests.post(
-            APPS_SCRIPT_WEBHOOK_URL,
-            json=payload,
-            timeout=20
-        )
+        script_result = send_result_to_apps_script(payload)
 
-        if response.status_code != 200:
+        if not isinstance(script_result, dict):
             return jsonify({
                 "success": False,
-                "error": f"Apps Script 전송 실패: HTTP {response.status_code}"
-            }), 500
-
-        try:
-            script_result = response.json()
-        except ValueError:
-            return jsonify({
-                "success": False,
-                "error": "Apps Script 응답이 JSON 형식이 아닙니다."
+                "error": "서버 처리 중 오류가 발생했습니다."
             }), 500
 
         if not script_result.get("success"):
+            logger.error("Apps Script 처리 실패: %s", script_result.get("error"))
             return jsonify({
                 "success": False,
-                "error": script_result.get("error", "Apps Script 처리 실패")
+                "error": "결과 전송 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
             }), 500
 
         return jsonify({"success": True})
 
-    except requests.exceptions.RequestException as e:
+    except requests.exceptions.HTTPError as e:
+        logger.error("Apps Script HTTP 오류: %s", e)
         return jsonify({
             "success": False,
-            "error": f"외부 연동 오류: {str(e)}"
+            "error": "결과 전송 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
         }), 500
 
-    except Exception as e:
+    except requests.exceptions.Timeout:
+        return jsonify({
+            "success": False,
+            "error": "요청 시간이 초과되었습니다. 잠시 후 다시 시도해주세요."
+        }), 500
+
+    except requests.exceptions.SSLError as e:
+        logger.error("Apps Script SSL 오류: %s", e)
+        return jsonify({
+            "success": False,
+            "error": "보안 연결 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
+        }), 500
+
+    except requests.exceptions.RequestException as e:
+        logger.error("외부 연동 오류: %s", e)
+        return jsonify({
+            "success": False,
+            "error": "외부 서비스 연동 중 오류가 발생했습니다."
+        }), 500
+
+    except ValueError as e:
         return jsonify({
             "success": False,
             "error": str(e)
+        }), 400
+
+    except Exception as e:
+        logger.error("리드 제출 처리 오류: %s", e)
+        return jsonify({
+            "success": False,
+            "error": "처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
         }), 500
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    if not APPS_SCRIPT_WEBHOOK_URL:
+        logger.warning("APPS_SCRIPT_WEBHOOK_URL 환경변수가 설정되지 않았습니다. /api/submit-lead 기능이 비활성화됩니다.")
+    app.run(debug=os.getenv("FLASK_DEBUG", "false").lower() == "true")

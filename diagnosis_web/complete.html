@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>신청 완료</title>
+  <title>상세 결과 발송 완료</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -69,33 +69,20 @@
 <body>
   <div class="container">
     <div class="card">
-      <h1>신청이 완료되었습니다</h1>
+      <h1>상세 결과 발송이 접수되었습니다</h1>
       <p>
-        입력하신 이메일로 상세 진단 결과를 발송할 예정입니다.
-      </p>
-      <p>
-        메일 도착까지 시간이 조금 걸릴 수 있으니,
-        받은편지함과 스팸함을 함께 확인해주세요.
+        입력하신 이메일로 유료 상세 진단 결과를 발송합니다.
+        고객 정보와 진단 결과는 연결된 시트에도 함께 저장됩니다.
       </p>
       <p class="muted">
-        브라우저 정책에 따라 창 닫기가 제한될 수 있습니다.
-        이 경우 확인 버튼을 누르면 시작 화면으로 이동합니다.
+        테스트 단계에서는 결제 없이 발송 흐름을 확인합니다.
+        실제 결제 연동 후에는 결제 완료 건만 이 화면으로 이동하게 됩니다.
       </p>
 
       <div class="button-row">
-        <button class="button" onclick="closeOrGoHome()">확인</button>
+        <a class="button" href="/">처음으로</a>
       </div>
     </div>
   </div>
-
-  <script>
-    function closeOrGoHome() {
-      window.close();
-
-      setTimeout(function () {
-        window.location.href = "/";
-      }, 300);
-    }
-  </script>
 </body>
 </html>

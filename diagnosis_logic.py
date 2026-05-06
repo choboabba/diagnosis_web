@@ -4,22 +4,49 @@ def reverse_score(score):
 
 
 def validate_answers(answers):
+    """
+    30문항 구조 검증
+    - 1~18: 1~5 정수
+    - 19~28: 1~5 정수 (선택형)
+    - 29~30: 문자열
+    """
     if not isinstance(answers, list):
         raise ValueError("answers는 리스트여야 합니다.")
 
-    if len(answers) != 18:
-        raise ValueError("문항 수는 18개여야 합니다.")
+    if len(answers) != 30:
+        raise ValueError("문항 수는 30개여야 합니다.")
 
-    for i, score in enumerate(answers, start=1):
+    # 1~18: 리커트 점수형
+    for i in range(18):
+        score = answers[i]
         if not isinstance(score, int):
-            raise ValueError(f"{i}번 문항 응답은 정수여야 합니다.")
+            raise ValueError(f"{i + 1}번 문항 응답은 정수여야 합니다.")
         if score < 1 or score > 5:
-            raise ValueError(f"{i}번 문항 응답은 1~5 사이여야 합니다.")
+            raise ValueError(f"{i + 1}번 문항 응답은 1~5 사이여야 합니다.")
+
+    # 19~28: 선택형
+    for i in range(18, 28):
+        score = answers[i]
+        if not isinstance(score, int):
+            raise ValueError(f"{i + 1}번 문항 응답은 정수여야 합니다.")
+        if score < 1 or score > 5:
+            raise ValueError(f"{i + 1}번 문항 응답은 1~5 사이여야 합니다.")
+
+    # 29~30: 서술형
+    for i in range(28, 30):
+        value = answers[i]
+        if not isinstance(value, str):
+            raise ValueError(f"{i + 1}번 문항 응답은 문자열이어야 합니다.")
+        if not value.strip():
+            raise ValueError(f"{i + 1}번 문항 응답은 비어 있을 수 없습니다.")
+        if len(value) > 1000:
+            raise ValueError(f"{i + 1}번 문항 응답은 1000자 이내여야 합니다.")
 
 
 def calculate_scores(answers):
     """
-    answers: 1~18번 질문에 대한 리스트
+    answers: 1~30번 질문에 대한 리스트
+    실제 점수 계산은 1~18번만 사용
     """
 
     validate_answers(answers)
@@ -38,9 +65,9 @@ def calculate_scores(answers):
     )
 
     return {
-        "Energy": energy,
-        "Compass": compass,
-        "Action": action
+        "energy": energy,
+        "compass": compass,
+        "action": action
     }
 
 
@@ -48,9 +75,9 @@ def diagnose(scores):
     """
     1차 3No 진단
     """
-    energy = scores["Energy"]
-    compass = scores["Compass"]
-    action = scores["Action"]
+    energy = scores["energy"]
+    compass = scores["compass"]
+    action = scores["action"]
 
     max_score = max(scores.values())
 
@@ -102,19 +129,14 @@ def get_action_subscores(answers):
 def classify_single_type(scores, answers):
     """
     단일 유형 분류
-    문서 기준:
-    - Energy 최고: 방전형 / 예민과부하형
-    - Compass 최고: 기준흔들림형 / 비교불안형
-    - Action 최고: 실행흔들림형 / 반복이탈형
     """
-    energy = scores["Energy"]
-    compass = scores["Compass"]
-    action = scores["Action"]
+    energy = scores["energy"]
+    compass = scores["compass"]
+    action = scores["action"]
 
     if energy >= compass and energy >= action:
         drained, overload = get_energy_subscores(answers)
 
-        # Action도 중간 이상이고 예민/과부하 문항이 더 높으면 예민과부하형
         if overload > drained and action >= 18:
             return "예민과부하형 부모"
         return "방전형 부모"
@@ -122,14 +144,12 @@ def classify_single_type(scores, answers):
     if compass >= energy and compass >= action:
         compass_core, comparison_anxiety = get_compass_subscores(answers)
 
-        # Energy도 중간 이상이고 비교/불안 문항이 더 높으면 비교불안형
         if comparison_anxiety > compass_core and energy >= 18:
             return "비교불안형 부모"
         return "기준흔들림형 부모"
 
     execution_wobble, repeated_drop = get_action_subscores(answers)
 
-    # Compass도 중간 이상이고 Q16이 높으면 반복이탈형
     if repeated_drop >= 4 and compass >= 18:
         return "반복이탈형 부모"
 
@@ -142,11 +162,10 @@ def classify_single_type(scores, answers):
 def classify_combo_type(scores, answers):
     """
     복합 유형 분류
-    문서 기준:
-    - 상위 2개 축 차이가 2점 이내
+    상위 2개 축 차이가 2점 이내
     """
     sorted_scores = sorted(
-        [("Energy", scores["Energy"]), ("Compass", scores["Compass"]), ("Action", scores["Action"])],
+        [("energy", scores["energy"]), ("compass", scores["compass"]), ("action", scores["action"])],
         key=lambda x: x[1],
         reverse=True
     )
@@ -159,16 +178,13 @@ def classify_combo_type(scores, answers):
 
     combo = {first_name, second_name}
 
-    # 문서의 대표 예시 조합
-    if combo == {"Energy", "Compass"}:
-        # Energy/Compass 세부 유형을 섞어도 되지만,
-        # 현재 서비스 단계에서는 낙인감과 복잡성을 줄이기 위해 대표 조합명 1개로 반환
+    if combo == {"energy", "compass"}:
         return "비교불안형 부모"
 
-    if combo == {"Energy", "Action"}:
+    if combo == {"energy", "action"}:
         return "예민과부하형 부모"
 
-    if combo == {"Compass", "Action"}:
+    if combo == {"compass", "action"}:
         return "반복이탈형 부모"
 
     return None
@@ -177,23 +193,20 @@ def classify_combo_type(scores, answers):
 def classify_type(scores, answers):
     """
     최종 유형 분류
-    규칙 우선순위:
+    우선순위:
     1) 전반적 과부하형
     2) 복합 유형
     3) 단일 유형
     """
-    energy = scores["Energy"]
-    compass = scores["Compass"]
-    action = scores["Action"]
+    energy = scores["energy"]
+    compass = scores["compass"]
+    action = scores["action"]
 
     score_list = [energy, compass, action]
     max_score = max(score_list)
     min_score = min(score_list)
 
-    # 전반적 과부하형:
-    # 최고/최저 차이가 2 이내이고, 3개 축이 모두 높을 때
-    # 18문항 구조상 각 축 총점은 6~30점.
-    # "모두 높음" 기준은 현재 MVP에서는 18점 이상으로 둠.
+    # 전반적 과부하형
     if max_score - min_score <= 2 and min_score >= 18:
         return "전반적 과부하형 부모"
 
@@ -325,18 +338,42 @@ def recommend_product(parent_type):
     return recommendations[parent_type]
 
 
+def get_extended_context(answers):
+    """
+    19~30번 응답을 결과 보조 정보로 구조화
+    """
+    return {
+        "time_slot": answers[18],              # Q19
+        "first_reaction": answers[19],         # Q20
+        "afterthought": answers[20],           # Q21
+        "break_point": answers[21],            # Q22
+        "main_burden": answers[22],            # Q23
+        "change_goal": answers[23],            # Q24
+        "first_action": answers[24],           # Q25
+        "after_conflict_pattern": answers[25], # Q26
+        "collapse_cause": answers[26],         # Q27
+        "self_state": answers[27],             # Q28
+        "collapse_scene": answers[28].strip(), # Q29
+        "priority_change": answers[29].strip() # Q30
+    }
+
+
 def run_diagnosis(answers):
     """
     Flask app.py에서 호출할 통합 진단 함수
+    answers: 길이 30의 리스트
     """
+    from action_plan import generate_action_plan
+
     scores = calculate_scores(answers)
     diagnosis_result = diagnose(scores)
     parent_type = classify_type(scores, answers)
     recommendation = recommend_product(parent_type)
     result_content = get_result_content(parent_type)
+    extended_context = get_extended_context(answers)
+    action_plan = generate_action_plan(answers, parent_type)
 
     return {
-        "answers": answers,
         "scores": scores,
         "diagnosis": diagnosis_result,
         "parent_type": parent_type,
@@ -347,16 +384,24 @@ def run_diagnosis(answers):
         "build": result_content["build"],
         "today": result_content["today"],
         "theory": result_content["theory"],
-        "recommendation": recommendation
+        "recommendation": recommendation,
+        "extended_context": extended_context,
+        "action_plan": action_plan,
     }
 
 
 if __name__ == "__main__":
-    sample = [3, 4, 4, 3, 3, 4, 3, 4, 3, 4, 3, 2, 4, 3, 4, 3, 2, 2]
+    sample = [
+        3, 4, 4, 3, 3, 4,
+        3, 4, 3, 4, 3, 2,
+        4, 3, 4, 3, 2, 2,
+        3, 1, 4, 2, 2, 4, 1, 3, 5, 2,
+        "아이가 말을 안 들을 때 갑자기 화를 크게 냈다",
+        "저녁에 감정적으로 반응하지 않도록 조절하고 싶다"
+    ]
 
     result = run_diagnosis(sample)
 
-    print("응답:", result["answers"])
     print("점수:", result["scores"])
     print("1차 진단:", result["diagnosis"])
     print("유형:", result["parent_type"])
@@ -367,3 +412,4 @@ if __name__ == "__main__":
     print("추천 매거진:", result["recommendation"]["magazine"])
     print("추천 가이드:", result["recommendation"]["guide"])
     print("추천 상품:", result["recommendation"]["product"])
+    print("확장 맥락:", result["extended_context"])

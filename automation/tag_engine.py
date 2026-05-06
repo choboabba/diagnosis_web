@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Dict, List, Tuple
+import json
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
+from automation import config
 from automation.tag_definitions import (
     TYPE_TAGS,
     MODULE_TAGS,
@@ -190,3 +193,91 @@ def validate_tag_result(tag_result: Dict[str, str]) -> Tuple[bool, List[str]]:
         errors.append(f"invalid framework_stage: {framework_stage}")
 
     return (len(errors) == 0, errors)
+
+
+class TagEngine:
+    """
+    Google Sheets 리드 1행에서 TAG를 생성하는 클래스.
+    tag_rules.json 규칙 파일을 기반으로 parent_type, interest, urgency를 결정한다.
+    """
+
+    def __init__(self, rules_file: Optional[Path] = None) -> None:
+        rules_path = rules_file or config.TAG_RULES_FILE
+        with open(rules_path, "r", encoding="utf-8") as f:
+            self._rules: Dict[str, Any] = json.load(f)
+        self._defaults: Dict[str, Any] = self._rules.get("defaults", {})
+        self._result_type_map: Dict[str, str] = self._rules.get("result_type_map", {})
+        self._interest_rules: Dict[str, Any] = self._rules.get("interest_rules", {})
+        self._urgency_rules: Dict[str, Any] = self._rules.get("urgency_rules", {})
+        self._offer_rules: Dict[str, str] = self._rules.get("offer_rules", {})
+        self._all_tags_order: List[str] = self._rules.get("all_tags_order", [])
+
+    def build_tags_from_row(self, row: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Google Sheets 리드 1행에서 TAG 딕셔너리를 생성한다.
+        반환값 키는 config.COL_* 상수 기준.
+        """
+        tag_parent_type = self._get_parent_type(row)
+        tag_interest = self._get_interest(row)
+        tag_urgency = self._get_urgency(row)
+        tag_stage = self._defaults.get("tag_stage", "stage_new")
+        tag_offer = self._offer_rules.get(tag_interest, self._defaults.get("tag_offer", "offer_unknown"))
+
+        tag_map = {
+            "tag_parent_type": tag_parent_type,
+            "tag_interest": tag_interest,
+            "tag_urgency": tag_urgency,
+            "tag_stage": tag_stage,
+            "tag_offer": tag_offer,
+        }
+        all_tags = "|".join(tag_map.get(k, "") for k in self._all_tags_order)
+
+        return {
+            config.COL_TAG_PARENT_TYPE: tag_parent_type,
+            config.COL_TAG_INTEREST: tag_interest,
+            config.COL_TAG_URGENCY: tag_urgency,
+            config.COL_TAG_STAGE: tag_stage,
+            config.COL_TAG_OFFER: tag_offer,
+            config.COL_ALL_TAGS: all_tags,
+        }
+
+    def _get_parent_type(self, row: Dict[str, Any]) -> str:
+        result_type = str(row.get("result_type", "")).strip()
+        return self._result_type_map.get(
+            result_type,
+            self._defaults.get("tag_parent_type", "ptype_unknown"),
+        )
+
+    def _get_interest(self, row: Dict[str, Any]) -> str:
+        score_fields: List[str] = self._interest_rules.get("score_fields", [])
+        mapping: Dict[str, str] = self._interest_rules.get("mapping", {})
+
+        best_field: Optional[str] = None
+        best_score: float = -1.0
+        for field in score_fields:
+            try:
+                score = float(row.get(field) or 0)
+            except (ValueError, TypeError):
+                score = 0.0
+            if score > best_score:
+                best_score = score
+                best_field = field
+
+        if best_field:
+            return mapping.get(best_field, self._defaults.get("tag_interest", "interest_unknown"))
+        return self._defaults.get("tag_interest", "interest_unknown")
+
+    def _get_urgency(self, row: Dict[str, Any]) -> str:
+        rules = self._urgency_rules
+        score_field: str = rules.get("score_field", "result_score")
+        try:
+            score = float(row.get(score_field) or 0)
+        except (ValueError, TypeError):
+            score = 0.0
+
+        mapping: Dict[str, str] = rules.get("mapping", {})
+        if score >= rules.get("high_min", 80):
+            return mapping.get("high", "urgency_high")
+        if score >= rules.get("mid_min", 60):
+            return mapping.get("mid", "urgency_mid")
+        return mapping.get("low", "urgency_low")

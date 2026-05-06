@@ -14,7 +14,7 @@
     }
 
     .container {
-      max-width: 820px;
+      max-width: 860px;
       margin: 0 auto;
       padding: 40px 20px;
     }
@@ -28,17 +28,23 @@
     }
 
     h1 {
-      margin-top: 0;
+      margin: 0 0 10px;
       color: #E2B05E;
       font-size: 30px;
-      margin-bottom: 8px;
+      line-height: 1.35;
     }
 
     h2 {
+      margin: 0 0 12px;
       color: #E2B05E;
       font-size: 20px;
-      margin-top: 0;
-      margin-bottom: 10px;
+      line-height: 1.45;
+    }
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 17px;
+      color: #F8F9FA;
     }
 
     p {
@@ -47,64 +53,38 @@
       margin: 10px 0;
     }
 
-    .type-label {
-      color: #E2B05E;
-      font-size: 14px;
-      font-weight: bold;
-      margin-bottom: 6px;
-      letter-spacing: 0.02em;
+    ul {
+      margin: 12px 0 0;
+      padding-left: 20px;
+      line-height: 1.75;
     }
 
-    .trust-copy {
+    .eyebrow {
+      color: #E2B05E;
+      font-size: 13px;
+      font-weight: bold;
+      letter-spacing: 0.03em;
+      margin-bottom: 8px;
+    }
+
+    .summary {
       background-color: rgba(226, 176, 94, 0.12);
       border: 1px solid rgba(226, 176, 94, 0.25);
-      padding: 14px 16px;
       border-radius: 12px;
-      font-size: 15px;
+      padding: 14px 16px;
+      margin-top: 14px;
     }
 
-    .relief-copy {
-      font-size: 22px;
-      font-weight: bold;
-      color: #F8F9FA;
-      line-height: 1.6;
-      margin-top: 8px;
-      margin-bottom: 0;
-    }
-
-    .lead-form {
-      display: grid;
-      gap: 14px;
-      margin-top: 18px;
-    }
-
-    .field-label {
-      display: block;
+    .muted {
       font-size: 14px;
-      margin-bottom: 6px;
-      color: #F8F9FA;
-    }
-
-    .field-input {
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: 10px;
-      border: 1px solid rgba(248, 249, 250, 0.16);
-      background-color: #0B132B;
-      color: #F8F9FA;
-      font-size: 15px;
-      box-sizing: border-box;
-    }
-
-    .field-input::placeholder {
-      color: rgba(248, 249, 250, 0.45);
+      opacity: 0.84;
     }
 
     .button-row {
-      margin-top: 24px;
       display: flex;
-      gap: 12px;
       flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 22px;
     }
 
     .button {
@@ -118,11 +98,6 @@
       border: none;
       cursor: pointer;
       font-size: 15px;
-      transition: opacity 0.2s ease;
-    }
-
-    .button:hover {
-      opacity: 0.92;
     }
 
     .button.secondary {
@@ -130,50 +105,129 @@
       color: #F8F9FA;
     }
 
-    .muted {
-      font-size: 14px;
-      opacity: 0.88;
+    .button.ghost {
+      background-color: transparent;
+      color: #E2B05E;
+      border: 1px solid rgba(226, 176, 94, 0.45);
     }
 
-    .notice-box {
-      background-color: #3A506B;
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .metric,
+    .action-box {
+      background-color: #0B132B;
+      border: 1px solid rgba(248, 249, 250, 0.12);
       border-radius: 12px;
-      padding: 16px;
-      margin-top: 12px;
+      padding: 14px 16px;
     }
 
-.product-list {
-  display: grid;
-  gap: 12px;
-  margin-top: 14px;
-}
+    .metric-name,
+    .action-box strong {
+      display: block;
+      color: #E2B05E;
+      font-size: 13px;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
 
-.product-item {
-  background-color: #0B132B;
-  border: 1px solid rgba(248, 249, 250, 0.12);
-  border-radius: 12px;
-  padding: 14px 16px;
-}
+    .metric-value {
+      font-size: 22px;
+      font-weight: bold;
+    }
 
-.product-rank {
-  font-size: 13px;
-  color: #E2B05E;
-  font-weight: bold;
-  margin-bottom: 6px;
-}
+    .chip-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
 
-.product-name {
-  font-size: 16px;
-  font-weight: bold;
-  color: #F8F9FA;
-}
-@media (max-width: 640px) {
+    .chip {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background-color: rgba(226, 176, 94, 0.12);
+      border: 1px solid rgba(226, 176, 94, 0.25);
+      color: #F8F9FA;
+      font-size: 13px;
+    }
+
+    .section-divider {
+      text-align: center;
+      padding: 24px 0 6px;
+    }
+
+    .section-divider span {
+      display: inline-block;
+      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background-color: rgba(248, 249, 250, 0.08);
+      border: 1px solid rgba(248, 249, 250, 0.14);
+      color: rgba(248, 249, 250, 0.7);
+      letter-spacing: 0.03em;
+    }
+
+    .paid-card {
+      border: 1px solid rgba(226, 176, 94, 0.35);
+      background: linear-gradient(180deg, rgba(226, 176, 94, 0.12), rgba(28, 37, 65, 1));
+    }
+
+    .lead-form {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    .field-input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(248, 249, 250, 0.16);
+      background-color: #0B132B;
+      color: #F8F9FA;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+
+    .consent-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin-top: 14px;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .consent-row input {
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      accent-color: #E2B05E;
+    }
+
+    @media (max-width: 720px) {
       .container {
-        padding: 20px 14px;
+        padding: 22px 14px;
       }
 
-      .relief-copy {
-        font-size: 19px;
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 26px;
       }
     }
   </style>
@@ -183,27 +237,75 @@
     <div id="resultContainer"></div>
 
     <div class="button-row">
-      <a href="/questions?page=1" class="button">다시 진단하기</a>
-      <button type="button" class="button secondary" id="resetBtn">응답 초기화</button>
+      <a href="/questions?page=1" class="button secondary">다시 진단하기</a>
+      <button type="button" class="button ghost" id="resetBtn">응답 초기화</button>
     </div>
   </div>
 
   <script>
-    function getCauseText(theoryText) {
-      const causeMap = {
-        "No Energy 중심": "지금은 회복과 에너지 보완이 가장 먼저 필요한 상태입니다.",
-        "No Compass 중심": "지금은 기준과 방향을 다시 세우는 것이 가장 중요한 상태입니다.",
-        "No Action 중심": "지금은 실행을 작게 이어갈 구조가 가장 필요한 상태입니다.",
-        "No Energy + No Action": "지침과 실행 흔들림이 함께 겹쳐 있는 상태입니다.",
-        "No Compass + No Energy": "비교 불안과 기준 흔들림이 함께 커지기 쉬운 상태입니다.",
-        "No Action + No Compass": "실행 이탈과 방향 흔들림이 함께 반복되기 쉬운 상태입니다.",
-        "No Energy + No Compass + No Action": "에너지, 기준, 실행이 함께 흔들리고 있어 우선순위 재정렬이 먼저 필요한 상태입니다."
-      };
-
-      return causeMap[theoryText] || theoryText || "지금 상태를 설명할 핵심 원인을 불러오지 못했습니다.";
+    function escapeHtml(value) {
+      if (value == null) return "";
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
     }
 
-    async function submitLead() {
+    function getStoredResult() {
+      const raw = localStorage.getItem("diagnosisResult");
+      return raw ? JSON.parse(raw) : null;
+    }
+
+    function getStoredAnswers() {
+      const raw = localStorage.getItem("answers");
+      return raw ? JSON.parse(raw) : null;
+    }
+
+    function getStoredLeadInfo() {
+      const raw = localStorage.getItem("leadInfo");
+      return raw ? JSON.parse(raw) : {};
+    }
+
+    function renderTags(tags) {
+      if (!Array.isArray(tags) || tags.filter(Boolean).length === 0) return "";
+      return `
+        <div class="chip-wrap">
+          ${tags.filter(Boolean).map(tag => `<span class="chip">${escapeHtml(tag)}</span>`).join("")}
+        </div>
+      `;
+    }
+
+    function renderScores(result) {
+      const scores = result && result.scores ? result.scores : {};
+      const items = [
+        { name: "Energy", value: scores.energy },
+        { name: "Compass", value: scores.compass },
+        { name: "Action", value: scores.action }
+      ].filter(item => item.value !== undefined && item.value !== null);
+
+      if (items.length === 0) return "";
+
+      return `
+        <div class="grid">
+          ${items.map(item => `
+            <div class="metric">
+              <span class="metric-name">${item.name}</span>
+              <span class="metric-value">${escapeHtml(item.value)}</span>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    async function submitPaidResultRequest() {
+      const consentPrivacy = document.getElementById("consentPrivacy");
+      if (!consentPrivacy || !consentPrivacy.checked) {
+        alert("개인정보 수집 및 이용에 동의해 주세요.");
+        return;
+      }
+
       const name = document.getElementById("leadName").value.trim();
       const email = document.getElementById("leadEmail").value.trim();
       const childCount = document.getElementById("leadChildCount").value.trim();
@@ -211,28 +313,26 @@
       const job = document.getElementById("leadJob").value.trim();
 
       if (!name) {
-        alert("이름을 입력해주세요.");
+        alert("이름을 입력해 주세요.");
         return;
       }
 
-      if (!email) {
-        alert("이메일을 입력해주세요.");
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        alert("이메일을 정확히 입력해 주세요.");
         return;
       }
 
-      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailPattern.test(email)) {
-        alert("이메일 형식을 확인해주세요.");
+      const diagnosisResult = getStoredResult();
+      if (!diagnosisResult) {
+        alert("진단 결과가 없습니다. 먼저 진단을 진행해 주세요.");
         return;
       }
 
-      const raw = localStorage.getItem("diagnosisResult");
-      if (!raw) {
-        alert("진단 결과 데이터가 없습니다. 다시 진단을 진행해주세요.");
-        return;
+      const submitButton = document.getElementById("paidSubmitBtn");
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = "유료 결과 발송 중...";
       }
-
-      const diagnosisResult = JSON.parse(raw);
 
       const payload = {
         name,
@@ -240,22 +340,30 @@
         child_count: childCount,
         child_age: childAge,
         job,
-        diagnosis_result: diagnosisResult
+        answers: getStoredAnswers(),
+        diagnosis_result: diagnosisResult,
+        diagnosis_version: "v2_30q",
+        submitted_at: new Date().toISOString(),
+        source: "paid_result_request",
+        product_code: "paid_parent_diagnosis_result",
+        product_name: "유료 부모 유형 상세 진단 결과",
+        payment_status: "paid_test_bypass",
+        payment_provider: "test",
+        payment_order_id: "TEST-" + Date.now(),
+        consent_privacy: true,
+        consent_marketing: document.getElementById("consentMarketing")?.checked ?? false
       };
 
       try {
         const response = await fetch("/api/submit-lead", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
         });
 
         const data = await response.json();
-
         if (!data.success) {
-          alert("신청 처리 중 오류가 발생했습니다: " + (data.error || "알 수 없는 오류"));
+          alert("유료 결과 발송 중 오류가 발생했습니다: " + (data.error || "알 수 없는 오류"));
           return;
         }
 
@@ -268,99 +376,121 @@
         }));
 
         window.location.href = "/complete";
-
       } catch (error) {
-        alert("서버 요청 실패: " + error.message);
+        alert("서버 오류: " + error.message);
+      } finally {
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = "결제 건너뛰고 유료 결과 이메일 발송 테스트";
+        }
       }
+    }
+
+    function renderLeadForm(savedLead) {
+      return `
+        <div class="lead-form">
+          <div>
+            <label class="field-label" for="leadName">이름 *</label>
+            <input class="field-input" type="text" id="leadName" placeholder="이름을 입력해 주세요" value="${escapeHtml(savedLead.name || "")}" />
+          </div>
+          <div>
+            <label class="field-label" for="leadEmail">이메일 *</label>
+            <input class="field-input" type="email" id="leadEmail" placeholder="example@email.com" value="${escapeHtml(savedLead.email || "")}" />
+          </div>
+          <div>
+            <label class="field-label" for="leadChildCount">자녀수 <span class="muted">(선택)</span></label>
+            <input class="field-input" type="text" id="leadChildCount" placeholder="예: 1" value="${escapeHtml(savedLead.child_count || "")}" />
+          </div>
+          <div>
+            <label class="field-label" for="leadChildAge">자녀 연령 <span class="muted">(선택)</span></label>
+            <input class="field-input" type="text" id="leadChildAge" placeholder="예: 7세, 3세" value="${escapeHtml(savedLead.child_age || "")}" />
+          </div>
+          <div>
+            <label class="field-label" for="leadJob">직업 <span class="muted">(선택)</span></label>
+            <input class="field-input" type="text" id="leadJob" placeholder="예: 회사원" value="${escapeHtml(savedLead.job || "")}" />
+          </div>
+        </div>
+        <label class="consent-row">
+          <input type="checkbox" id="consentPrivacy" />
+          <span>개인정보 수집 및 이용에 동의합니다. 필수</span>
+        </label>
+        <label class="consent-row">
+          <input type="checkbox" id="consentMarketing" />
+          <span>진단 관련 콘텐츠와 안내 메일 수신에 동의합니다. 선택</span>
+        </label>
+        <div class="button-row">
+          <button type="button" class="button" id="paidSubmitBtn" onclick="submitPaidResultRequest()">결제 건너뛰고 유료 결과 이메일 발송 테스트</button>
+        </div>
+      `;
     }
 
     function renderResult() {
       const resultContainer = document.getElementById("resultContainer");
-      const raw = localStorage.getItem("diagnosisResult");
+      const result = getStoredResult();
 
-      if (!raw) {
+      if (!result) {
         resultContainer.innerHTML = `
           <div class="card">
-            <h1>진단 결과</h1>
-            <p>결과 데이터가 없습니다. 먼저 진단을 진행해주세요.</p>
+            <div class="eyebrow">진단 결과</div>
+            <h1>아직 진단 결과가 없습니다</h1>
+            <p>먼저 진단 문항에 응답하면 무료 결과와 유료 결과 신청 흐름을 확인할 수 있습니다.</p>
+            <div class="button-row">
+              <a href="/questions?page=1" class="button">진단 시작하기</a>
+            </div>
           </div>
         `;
         return;
       }
 
-      const result = JSON.parse(raw);
-
-      const typeName = result.parent_type || "결과 확인 필요";
-      const relief = result.relief || "지금 상태를 먼저 이해하는 것이 중요합니다.";
-      const structure = result.structure || "구조 설명을 불러오지 못했습니다.";
-      const theory = result.theory || "";
-      const causeText = getCauseText(theory);
-      const displayTags = Array.isArray(result.display_tags) ? result.display_tags.filter(Boolean) : [];
-      const recommendedProducts = Array.isArray(result.recommended_products) ? result.recommended_products.filter(Boolean) : [];
+      const savedLead = getStoredLeadInfo();
+      const typeName = escapeHtml(result.parent_type || "결과 확인 필요");
+      const relief = escapeHtml(result.relief || "현재 반복 패턴을 기준으로 결과를 정리했습니다.");
+      const today = escapeHtml(result.today || "오늘 바로 할 수 있는 행동을 1개만 선택합니다.");
+      const displayTags = Array.isArray(result.display_tags) ? result.display_tags : [];
 
       resultContainer.innerHTML = `
         <div class="card">
-          <div class="type-label">부모 유형 진단 결과</div>
+          <div class="eyebrow">무료 진단 결과</div>
           <h1>${typeName}</h1>
-          <p class="trust-copy">
-            이 결과는 부모를 평가하는 진단이 아니라,
-            현재 가장 먼저 무너지고 있는 구조를 이해하기 위한 해석입니다.
-          </p>
-          <p class="relief-copy">${relief}</p>
+          <p class="summary">${relief}</p>
+          ${renderTags(displayTags)}
         </div>
 
         <div class="card">
-          <h2>지금의 상태</h2>
-          <p>${structure}</p>
+          <h2>무료 결과에서 확인하는 것</h2>
+          <ul>
+            <li>현재 유형 이름</li>
+            <li>최근 2주 동안 가장 자주 흔들린 영역</li>
+            <li>오늘 바로 시도할 수 있는 작은 행동 1개</li>
+          </ul>
+          ${renderScores(result)}
+          <div class="action-box">
+            <strong>오늘 바로 할 수 있는 것 1개</strong>
+            <p>${today}</p>
+          </div>
         </div>
-        <div class="card">
-          <h2>현재 상태의 핵심 원인</h2>
-          <p>${causeText}</p>
+
+        <div class="section-divider">
+          <span>여기까지가 무료 진단 결과입니다</span>
         </div>
-        <div class="card">
-          <h2>상세 진단 결과 메일로 받기</h2>
+
+        <div class="card paid-card">
+          <div class="eyebrow">유료 상세 결과 이메일 발송</div>
+          <h2>결제 후 입력한 이메일로 상세 진단 결과를 보내드립니다</h2>
           <p>
-            지금 결과는 간략 버전입니다.
-            아래 정보를 입력하시면 상세 진단 결과와 맞춤 회복 가이드를 이메일로 보내드립니다.
+            실제 서비스에서는 결제 완료 후 아래 고객 정보와 진단 결과가 이미 연결된 시트로 저장되고,
+            유료 상세 결과가 입력한 이메일로 발송됩니다.
           </p>
-
-          <div class="notice-box">
-            <p class="muted">
-              입력 후에는 화면에서 상세 결과가 바로 열리지 않고,
-              작성하신 이메일로 상세 진단 결과가 발송됩니다.
-            </p>
-          </div>
-
-          <div class="lead-form">
-            <div>
-              <label class="field-label" for="leadName">이름</label>
-              <input class="field-input" type="text" id="leadName" placeholder="이름을 입력해주세요" />
-            </div>
-
-            <div>
-              <label class="field-label" for="leadEmail">이메일</label>
-              <input class="field-input" type="email" id="leadEmail" placeholder="example@email.com" />
-            </div>
-
-            <div>
-              <label class="field-label" for="leadChildCount">자녀수</label>
-              <input class="field-input" type="text" id="leadChildCount" placeholder="예: 숫자만 입력 (2명이면 '2')" />
-            </div>
-
-            <div>
-              <label class="field-label" for="leadChildAge">자녀연령</label>
-              <input class="field-input" type="text" id="leadChildAge" placeholder="예: 만 나이로 숫자만 입력 ('7', '1')" />
-            </div>
-
-            <div>
-              <label class="field-label" for="leadJob">직업</label>
-              <input class="field-input" type="text" id="leadJob" placeholder="예: 회사원" />
-            </div>
-          </div>
-
-          <div class="button-row">
-            <button type="button" class="button" onclick="submitLead()">상세 결과 메일로 받기</button>
-          </div>
+          <p class="muted">
+            지금은 테스트 단계이므로 결제 단계는 건너뛰고, 동일한 데이터 저장/이메일 발송 흐름만 확인합니다.
+          </p>
+          <ul>
+            <li>고객 정보와 진단 결과를 연결된 시트로 전송</li>
+            <li>유료 상세 결과 이메일 본문 생성</li>
+            <li>입력한 이메일 주소로 결과 발송</li>
+            <li>테스트 결제 상태값: paid_test_bypass</li>
+          </ul>
+          ${renderLeadForm(savedLead)}
         </div>
       `;
     }
